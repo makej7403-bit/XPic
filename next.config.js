@@ -1,16 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**.firebasestorage.googleapis.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.firebasestorage.app",
-      },
-    ],
+  webpack: (config) => {
+    config.externals.push({ undici: "commonjs undici" }); 
+    return config;
   },
 };
 
