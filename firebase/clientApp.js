@@ -1,18 +1,23 @@
-import { initializeApp } from "firebase/app";
+// firebase/clientApp.js
+import { initializeApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC5hFB3ICxzyMrlvtnQl-n-2Dkr2RFsmqc",
-  authDomain: "fir-9b1f8.firebaseapp.com",
-  projectId: "fir-9b1f8",
-  storageBucket: "fir-9b1f8.firebasestorage.app",
-  messagingSenderId: "539772525700",
-  appId: "1:539772525700:web:25b5a686877ddbf6d176d1",
-  measurementId: "G-7FWY3QB5MY"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 
-export const firestore = getFirestore(app);
+// Exports used across the project
+export const db = getFirestore(app);
+export const auth = getAuth(app);
 export const storage = getStorage(app);
+
+export default app;
