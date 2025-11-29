@@ -1,26 +1,77 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
-import Image from "next/image";
-
-// load Firebase Storage only on client
-const loadStorage = () => import("../firebase/clientStorage").then(m => m.storage);
+import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
 
 export default function Home() {
   const [storage, setStorage] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
 
+  // Load Firebase client storage dynamically
   useEffect(() => {
-    loadStorage().then(setStorage);
+    import("../firebase/clientStorage").then((m) => setStorage(m.storage));
   }, []);
 
-  if (!storage) {
-    return <p>Loading...</p>;
-  }
+  // Load all photos from Firebase
+  const loadPhotos = async () => {
+    if (!storage) return;
+
+    const listRef = ref(storage, "uploads/");
+    const items = await listAll(listRef);
+
+    const urls = await Promise.all(
+      items.items.map((item) => getDownloadURL(item))
+    );
+
+    setFiles(urls);
+  };
+
+  useEffect(() => {
+    if (storage) loadPhotos();
+  }, [storage]);
+
+  // Upload file
+  const handleUpload = async (e) => {
+    if (!storage) return;
+
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+
+    const fileRef = ref(storage, `uploads/${Date.now()}-${file.name}`);
+    await uploadBytes(fileRef, file);
+
+    setUploading(false);
+    loadPhotos();
+  };
+
+  if (!storage) return <p className="p-4">Loading...</p>;
 
   return (
-    <main className="p-4">
-      {/* your UI here */}
+    <main className="p-4 space-y-4">
+      <h1 className="text-2xl font-bold">XPic — Upload & View Images</h1>
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleUpload}
+        className="mb-4"
+      />
+
+      {uploading && <p>Uploading...</p>}
+
+      <div className="grid grid-cols-2 gap-4">
+        {files.map((url, i) => (
+          <img
+            key={i}
+            src={url}
+            className="w-full rounded-lg"
+            alt={`upload-${i}`}
+          />
+        ))}
+      </div>
     </main>
   );
 }
