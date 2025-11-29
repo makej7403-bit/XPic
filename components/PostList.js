@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/firebase/client";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { db } from "../firebase/clientApp";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import Image from "next/image";
-
-import Reactions from "./Reactions";
-import Comments from "./Comments";
+import ShareButtons from "./ShareButtons";
 
 export default function PostList() {
   const [posts, setPosts] = useState([]);
@@ -22,41 +20,58 @@ export default function PostList() {
       setPosts(list);
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
-  if (posts.length === 0)
-    return <p className="text-center mt-10">No posts yet.</p>;
+  if (!posts.length) {
+    return <p className="text-center mt-6 text-gray-500">No posts yet.</p>;
+  }
 
   return (
-    <div className="mt-6 flex flex-col gap-6">
+    <div className="max-w-xl mx-auto mt-4 space-y-6 pb-20">
       {posts.map((post) => (
         <div
           key={post.id}
-          className="p-4 border rounded-md shadow-sm bg-white"
+          className="bg-white rounded-lg shadow p-4 border border-gray-200"
         >
-          {/* File preview */}
-          {post.url && (
-            <div className="relative w-full h-64 bg-gray-200 rounded overflow-hidden">
+          {/* Post Owner */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-gray-300 rounded-full" />
+            <div>
+              <p className="font-semibold">{post.username || "User"}</p>
+              <p className="text-xs text-gray-400">
+                {post.createdAt?.toDate
+                  ? post.createdAt.toDate().toLocaleString()
+                  : ""}
+              </p>
+            </div>
+          </div>
+
+          {/* Caption */}
+          {post.caption && (
+            <p className="mb-3 text-gray-700">{post.caption}</p>
+          )}
+
+          {/* Image */}
+          {post.imageUrl && (
+            <div className="relative w-full h-64 bg-gray-100 rounded overflow-hidden">
               <Image
-                src={post.url}
-                alt="Post"
+                src={post.imageUrl}
+                alt="Post Image"
                 fill
-                className="object-cover"
+                style={{ objectFit: "cover" }}
               />
             </div>
           )}
 
-          {/* Caption */}
-          {post.caption && (
-            <p className="mt-2 text-gray-800">{post.caption}</p>
-          )}
+          {/* Likes + Comments */}
+          <div className="mt-3 flex items-center justify-between text-sm">
+            <p className="text-gray-600">{post.likes || 0} Likes</p>
+            <p className="text-gray-600">{post.commentCount || 0} Comments</p>
+          </div>
 
-          {/* Reactions (Step A) */}
-          <Reactions postId={post.id} />
-
-          {/* Comments */}
-          <Comments postId={post.id} />
+          {/* Sharing */}
+          <ShareButtons url={`https://xpic.vercel.app/post/${post.id}`} />
         </div>
       ))}
     </div>
