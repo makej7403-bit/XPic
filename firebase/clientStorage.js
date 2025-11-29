@@ -1,35 +1,19 @@
-// firebase/clientApp.js
-// Browser-safe Firebase initialization (Auth, Firestore, Storage)
-// Use environment variables in Vercel: NEXT_PUBLIC_FIREBASE_*
-
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+// firebase/clientStorage.js
+import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
 
+// Your Firebase config (paste yours here)
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || undefined,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-function getFirebaseApp() {
-  // initializeApp MUST be called only in the browser/client code.
-  if (typeof window === "undefined") {
-    // safety: don't initialize on server
-    throw new Error("firebase/clientApp should only be imported on the client");
-  }
-  return !getApps().length ? initializeApp(firebaseConfig) : getApp();
-}
+// Prevent Firebase from initializing twice
+const app = initializeApp(firebaseConfig);
 
-const app = getFirebaseApp();
-
-// Exports
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
-export const db = getFirestore(app);
+// ⭐ IMPORTANT: Use getStorage() — NOT any @firebase/node version
 export const storage = getStorage(app);
