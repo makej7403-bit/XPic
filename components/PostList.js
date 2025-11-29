@@ -2,18 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { db } from "@/firebase/client";
-import {
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
-} from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import Image from "next/image";
+
+import Reactions from "./Reactions";
 import Comments from "./Comments";
 
 export default function PostList() {
   const [posts, setPosts] = useState([]);
 
-  // Load posts live from Firestore
   useEffect(() => {
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
 
@@ -28,50 +25,37 @@ export default function PostList() {
     return unsubscribe;
   }, []);
 
+  if (posts.length === 0)
+    return <p className="text-center mt-10">No posts yet.</p>;
+
   return (
-    <div style={{ marginTop: "30px" }}>
-      <h2 style={{ fontSize: "22px", fontWeight: "bold", marginBottom: "15px" }}>
-        Latest Uploads
-      </h2>
-
-      {posts.length === 0 && <p>No posts yet.</p>}
-
+    <div className="mt-6 flex flex-col gap-6">
       {posts.map((post) => (
         <div
           key={post.id}
-          style={{
-            background: "white",
-            padding: "15px",
-            borderRadius: "10px",
-            boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-            marginBottom: "25px",
-          }}
+          className="p-4 border rounded-md shadow-sm bg-white"
         >
-          {/* Title */}
-          <h3 style={{ fontSize: "18px", marginBottom: "10px" }}>{post.title}</h3>
-
-          {/* Image or file URL */}
-          {post.fileUrl && (
-            <img
-              src={post.fileUrl}
-              alt="uploaded file"
-              style={{
-                width: "100%",
-                borderRadius: "10px",
-                marginBottom: "10px",
-                background: "#eee",
-              }}
-            />
+          {/* File preview */}
+          {post.url && (
+            <div className="relative w-full h-64 bg-gray-200 rounded overflow-hidden">
+              <Image
+                src={post.url}
+                alt="Post"
+                fill
+                className="object-cover"
+              />
+            </div>
           )}
 
-          {/* Description */}
-          {post.description && (
-            <p style={{ marginTop: "8px", marginBottom: "10px" }}>
-              {post.description}
-            </p>
+          {/* Caption */}
+          {post.caption && (
+            <p className="mt-2 text-gray-800">{post.caption}</p>
           )}
 
-          {/* COMMENTS SECTION */}
+          {/* Reactions (Step A) */}
+          <Reactions postId={post.id} />
+
+          {/* Comments */}
           <Comments postId={post.id} />
         </div>
       ))}
