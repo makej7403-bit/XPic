@@ -1,5 +1,9 @@
 "use client";
 
+import FollowButton from "@/components/FollowButton";
+
+// inside render near header
+<FollowButton uid={uid} />
 import { useEffect, useState } from "react";
 import { firestore } from "@/firebase/clientApp";
 import {
